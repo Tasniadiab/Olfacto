@@ -1,6 +1,10 @@
 from sqlalchemy import types
 from app import db 
+from uuid import uuid4
 
+
+def get_uuid():
+    return uuid4().hex
 
 user_category_association = db.Table(
     'user_category_association',
@@ -29,28 +33,28 @@ user_perfume_association = db.Table(
 class User(db.Model):
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True, unique=True)
-    username = db.Column(db.Text, unique=True, nullable=False)
-    firstname = db.Column(db.Text, nullable=False)
-    lastname = db.Column(db.Text, nullable=False)
-    email = db.Column(db.Text, unique=True, nullable=False)
-    password = db.Column(db.Text, nullable=False)
-    profilepicture = db.Column(types.LargeBinary)
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    firstname = db.Column(db.String(50), nullable=False)
+    lastname = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    profilepicture = db.Column(types.LargeBinary, nullable=True)
     datejoined = db.Column(db.DateTime, nullable=False)
     category_preferences = db.relationship('Category', secondary=user_category_association,
-                                           backref=db.backref('users', lazy='dynamic'))
+                                           backref=db.backref('users', lazy='dynamic'),nullable=True)
     brand_preferences = db.relationship('Brand', secondary=user_brand_association,
-                                        backref=db.backref('users', lazy='dynamic'))
+                                        backref=db.backref('users', lazy='dynamic'),nullable=True)
     note_preferences = db.relationship('Note', secondary=user_note_association,
-                                       backref=db.backref('users', lazy='dynamic'))
+                                       backref=db.backref('users', lazy='dynamic'),nullable=True)
     tried_perfumes = db.relationship('Perfume', secondary=user_note_association,
-                                   backref=db.backref('users_tried', lazy='dynamic'))
+                                   backref=db.backref('users_tried', lazy='dynamic'),nullable=True)
     want_to_try = db.relationship('Perfume', secondary=user_note_association,
-                                    backref=db.backref('users_want_to_try', lazy='dynamic'))
+                                    backref=db.backref('users_want_to_try', lazy='dynamic'),nullable=True)
     wishlist = db.relationship('Perfume', secondary=user_note_association,
-                                    backref=db.backref('users_wishlist', lazy='dynamic'))
+                                    backref=db.backref('users_wishlist', lazy='dynamic'),nullable=True)
     favorite_perfumes = db.relationship('Perfume', secondary=user_note_association,
-                                    backref=db.backref('users_favorite', lazy='dynamic'))
+                                    backref=db.backref('users_favorite', lazy='dynamic'),nullable=True)
     
 
 

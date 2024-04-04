@@ -17,6 +17,11 @@ class Notes(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     note = db.Column(db.Text, unique=True, nullable=False)
 
+perfume_note_association = db.Table(
+    'perfume_note',
+    db.Column('perfume_id', db.Integer, db.ForeignKey('perfumes.id'), primary_key=True),
+    db.Column('note_id', db.Integer, db.ForeignKey('notes.id'), primary_key=True)
+)
 
 perfume_category = db.Table(
     'perfume_category',
