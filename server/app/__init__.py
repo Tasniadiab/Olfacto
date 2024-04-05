@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_migrate import Migrate
 import os
+from app.routes.accounts import authenticate
 
 load_dotenv()
 
@@ -26,10 +27,8 @@ def create_app(environment='development'):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    from app.models.perfume import Perfume , perfume_category
-    from app.models.category import Category
-    from app.models.brand import Brand
-    from app.models.accounts import User, user_perfume_association, user_brand_association, user_category_association, user_note_association
+    app.register_blueprint(authenticate)
+
     
     
     

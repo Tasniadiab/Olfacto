@@ -42,19 +42,19 @@ class User(db.Model):
     profilepicture = db.Column(types.LargeBinary, nullable=True)
     datejoined = db.Column(db.DateTime, nullable=False)
     category_preferences = db.relationship('Category', secondary=user_category_association,
-                                           backref=db.backref('users', lazy='dynamic'),nullable=True)
+                                           backref=db.backref('users', lazy='dynamic'))
     brand_preferences = db.relationship('Brand', secondary=user_brand_association,
-                                        backref=db.backref('users', lazy='dynamic'),nullable=True)
+                                        backref=db.backref('users', lazy='dynamic'))
     note_preferences = db.relationship('Note', secondary=user_note_association,
-                                       backref=db.backref('users', lazy='dynamic'),nullable=True)
+                                       backref=db.backref('users', lazy='dynamic'))
     tried_perfumes = db.relationship('Perfume', secondary=user_note_association,
-                                   backref=db.backref('users_tried', lazy='dynamic'),nullable=True)
+                                   backref=db.backref('users_tried', lazy='dynamic'))
     want_to_try = db.relationship('Perfume', secondary=user_note_association,
-                                    backref=db.backref('users_want_to_try', lazy='dynamic'),nullable=True)
+                                    backref=db.backref('users_want_to_try', lazy='dynamic'))
     wishlist = db.relationship('Perfume', secondary=user_note_association,
-                                    backref=db.backref('users_wishlist', lazy='dynamic'),nullable=True)
+                                    backref=db.backref('users_wishlist', lazy='dynamic'))
     favorite_perfumes = db.relationship('Perfume', secondary=user_note_association,
-                                    backref=db.backref('users_favorite', lazy='dynamic'),nullable=True)
+                                    backref=db.backref('users_favorite', lazy='dynamic'))
     
 
 
