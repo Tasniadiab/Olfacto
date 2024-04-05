@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, request, jsonify, session
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from app.models.accounts import User
-from app import create_app,db
+from app import db
 
 
 authenticate = Blueprint('authenticate', __name__)
