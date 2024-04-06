@@ -2,12 +2,13 @@ from flask import Flask, Blueprint, request, jsonify, session
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from app.models.accounts import User
-from app import db
+from app.models import db
 
+app = Flask(__name__)
 
 authenticate = Blueprint('authenticate', __name__)
-server_session = Session(authenticate)
-bcrypt = Bcrypt(authenticate)
+
+bcrypt = Bcrypt(app)
 
 @authenticate.route("/register", methods=["POST"])
 def register_user():
@@ -28,6 +29,7 @@ def register_user():
 
     hashed_password = bcrypt.generate_password_hash(password)
     new_user = User(email=email, username=username, firstname=firstname, lastname=lastname, password=hashed_password)
+    new_user.set_password(password) 
     db.session.add(new_user)
     db.session.commit()
 

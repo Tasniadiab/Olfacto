@@ -1,13 +1,15 @@
 import os
 import redis
 
+
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_TYPE = 'redis'
-    SESION_PERMANENT = False
+    SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
     SESSION_REDIS = redis.from_url('redis://127.0.0.1:6379')
+    
     
 class DevelopmentConfig(Config):
     DEVELOPMENT = True

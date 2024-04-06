@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 34dd7e24046e
-Revises: 
-Create Date: 2024-03-23 02:11:33.654088
+Revision ID: 8ec8c6b54be4
+Revises: d5eef63403a1
+Create Date: 2024-04-06 03:13:58.878419
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '34dd7e24046e'
-down_revision = None
+revision = '8ec8c6b54be4'
+down_revision = 'd5eef63403a1'
 branch_labels = None
 depends_on = None
 
@@ -28,6 +28,7 @@ def upgrade():
     op.create_table('categories',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('type', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )
@@ -39,13 +40,13 @@ def upgrade():
     sa.UniqueConstraint('note')
     )
     op.create_table('users',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('username', sa.Text(), nullable=False),
-    sa.Column('firstname', sa.Text(), nullable=False),
-    sa.Column('lastname', sa.Text(), nullable=False),
-    sa.Column('email', sa.Text(), nullable=False),
-    sa.Column('password', sa.Text(), nullable=False),
-    sa.Column('profilepicture', sa.LargeBinary(), nullable=True),
+    sa.Column('id', sa.String(length=32), nullable=False),
+    sa.Column('username', sa.String(length=100), nullable=False),
+    sa.Column('firstname', sa.String(length=50), nullable=False),
+    sa.Column('lastname', sa.String(length=50), nullable=False),
+    sa.Column('email', sa.String(), nullable=False),
+    sa.Column('password', sa.String(), nullable=False),
+    sa.Column('profilepicture', sa.String(length=300), nullable=True),
     sa.Column('datejoined', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
@@ -54,28 +55,31 @@ def upgrade():
     )
     op.create_table('perfumes',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('add', sa.String(length=60), nullable=True),
     sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('test', sa.Text(), nullable=True),
     sa.Column('brand_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['brand_id'], ['brands.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )
     op.create_table('user_brand_association',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.String(length=32), nullable=False),
     sa.Column('brand_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['brand_id'], ['brands.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'brand_id')
     )
     op.create_table('user_category_association',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.String(length=32), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'category_id')
     )
     op.create_table('user_note_association',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.String(length=32), nullable=False),
     sa.Column('note_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['note_id'], ['notes.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
@@ -84,7 +88,7 @@ def upgrade():
     op.create_table('comments',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.String(length=32), nullable=True),
     sa.Column('perfume_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['perfume_id'], ['perfumes.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
@@ -98,8 +102,15 @@ def upgrade():
     sa.ForeignKeyConstraint(['perfume_id'], ['perfumes.id'], ),
     sa.PrimaryKeyConstraint('perfume_id', 'category_id')
     )
+    op.create_table('perfume_note',
+    sa.Column('perfume_id', sa.Integer(), nullable=False),
+    sa.Column('note_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['note_id'], ['notes.id'], ),
+    sa.ForeignKeyConstraint(['perfume_id'], ['perfumes.id'], ),
+    sa.PrimaryKeyConstraint('perfume_id', 'note_id')
+    )
     op.create_table('user_perfume_association',
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.String(length=32), nullable=False),
     sa.Column('perfume_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['perfume_id'], ['perfumes.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
@@ -111,6 +122,7 @@ def upgrade():
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table('user_perfume_association')
+    op.drop_table('perfume_note')
     op.drop_table('perfume_category')
     op.drop_table('comments')
     op.drop_table('user_note_association')
