@@ -39,7 +39,9 @@ def create_app(environment='development'):
     
 
     from app.routes.accounts import authenticate
+    from app.routes.perfume import perfume
     app.register_blueprint(authenticate)
+    app.register_blueprint(perfume)
 
     
     @app.route('/')

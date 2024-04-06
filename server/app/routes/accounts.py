@@ -10,6 +10,23 @@ authenticate = Blueprint('authenticate', __name__)
 
 bcrypt = Bcrypt(app)
 
+@authenticate.route("/@me")
+def get_current_user():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "no account under this email"}), 401
+    
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({
+        "id": user.id,
+        "email": user.email,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+        "username": user.username
+    })
+
+
 @authenticate.route("/register", methods=["POST"])
 def register_user():
     email = request.json["email"]
@@ -63,3 +80,13 @@ def login_user():
         "lastname": user.lastname,
         "username": user.username
     })
+
+
+@authenticate.route('/signout', methods=['GET'])
+def sign_out():
+    session.pop('user_id', None) 
+
+    return jsonify({
+        "msg": "You have been successfully signed out."
+    })
+   

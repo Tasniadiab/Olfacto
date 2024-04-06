@@ -37,10 +37,8 @@ class Perfume(db.Model):
     __tablename__ = 'perfumes'
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    add = db.Column(db.String(60))
     name = db.Column(db.String(100), nullable=False)
     description =  db.Column(db.Text)
-    test = db.Column(db.Text)
 
     brand_id = db.Column(db.Integer, db.ForeignKey('brands.id'))
     brand = db.relationship('Brand', backref='perfume_brand')

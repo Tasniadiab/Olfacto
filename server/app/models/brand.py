@@ -8,6 +8,6 @@ class Brand(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
     name = db.Column(db.String(100), nullable=False)
-    logo = db.Column(types.LargeBinary)
+    logo = db.Column(db.String(300), nullable=True)
 
     perfumes = db.relationship('Perfume', backref='brand_perfume')
