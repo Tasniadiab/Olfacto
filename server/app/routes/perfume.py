@@ -1,7 +1,9 @@
 from flask import Flask, Blueprint, jsonify, request
-from app.models.perfume import Perfume, Notes, perfume_note
+from app.models.perfume import Perfume, Notes, NoteType, perfume_note, perfume_category
 from app.models.brand import Brand
+from app.models.category import Category
 from app.models import db
+from sqlalchemy import select
 
 
 perfume = Blueprint('perfume', __name__)
@@ -9,6 +11,11 @@ perfume = Blueprint('perfume', __name__)
 @perfume.route("/perfumes", methods = ["GET"])
 def get_perfumes():
     all_perfumes = Perfume.query.all()
+    perfume_note_query = db.session.query(Perfume, Notes, NoteType).\
+        select_from(perfume_note.join(Notes, perfume_note.c.note_id == Notes.id).\
+        join(NoteType, perfume_note.c.note_type_id == NoteType.id)).\
+        filter(perfume_note.c.perfume_id == Perfume.id).\
+        all()
 
     perfumes = []
     for perfume in all_perfumes:
@@ -21,12 +28,28 @@ def get_perfumes():
             }
             comments.append(comment_data)
         notes = []
-        for note in perfume.notes:
+        top_notes = []
+        heart_notes = []
+        base_notes = []
+
+        for perf_note in perfume.notes:
             note_data = {
-                "id": note.id,
-                "notes": note.note
-            }
-            notes.append(note_data)
+                    "id": perf_note.id,
+                    "notes": perf_note.note
+                }
+            for p, n, nt in perfume_note_query:
+                if n.id == perf_note.id:
+                    if nt.name == "Top Note":
+                        top_notes.append(note_data)
+                    elif nt.name == "Heart Note":
+                        heart_notes.append(note_data)
+                    elif nt.name == "Base Note":
+                        base_notes.append(note_data)
+                    else: 
+                        notes.append(note_data)
+        notes.append({"Top Notes": top_notes})
+        notes.append({"Heart Notes": heart_notes})
+        notes.append({"Base Notes": base_notes})
         categories = []
         for category in perfume.categories:
             category_data = {
@@ -44,6 +67,7 @@ def get_perfumes():
             "comments": comments
         }
         perfumes.append(perfume_data)
+    print(len(perfumes))
     return jsonify({'perfumes': perfumes})
 
 @perfume.route("/create_perfume", methods = ["POST"])
@@ -61,30 +85,68 @@ def create_perfumes():
 
     if not existing_brand: 
         return jsonify({"error": "brand does not exist"})
-    elif exist_name and existing_brand:
+    elif exist_name is not None and existing_brand is not None:
         return jsonify({"error": f"{brand}'s {name} already exists"})
     else: 
         brand_id = existing_brand.id 
 
-    
-
     new_perfume = Perfume(name=name, description=description, brand_id=brand_id)
     db.session.add(new_perfume)
-    db.session.commit()
 
+    for category in categories: 
+        existing_category = Category.query.filter_by(name=category).first()
+
+        if not existing_category: 
+            return jsonify({"error": " Category doesn't exist"})
+        else: 
+            category_id = existing_category.id
+            association = perfume_category.insert().values(perfume_id=new_perfume.id, category_id=category_id)
+            db.session.execute(association)
+            perfume_categories.append({"name": existing_category.name, "id": category_id})
+    
+    new_notes = []
+    top_notes = []
+    heart_notes = []
+    base_notes = []
     for note in notes: 
-        existing_note = Notes.query.filter_by(note=note).first() 
+        note_name = note["note"]
+        note_type_name = note["note_type"]
+        existing_note = Notes.query.filter_by(note=note_name).first() 
+        note_type = NoteType.query.filter_by(name=note_type_name).first()
         if existing_note: 
             note_id = existing_note.id
             
-            association = perfume_note.insert().values(perfume_id=new_perfume.id, note_id=note_id)
+            association = perfume_note.insert().values(perfume_id=new_perfume.id, note_id=note_id, note_type_id=note_type.id)
             db.session.execute(association)
+            note_data = {
+                        "id": existing_note.id,
+                        "notes": note_name
+                    }
         else: 
-            new_note = Notes(note=note)
+            new_note = Notes(note=note_name)
             db.session.add(new_note)
             db.session.commit()
+            note_id = new_note.id
+            
+            association = perfume_note.insert().values(perfume_id=new_perfume.id, note_id=note_id, note_type_id=note_type.id)
+            db.session.execute(association)
+            note_data = {
+                        "id": note_id,
+                        "notes": note_name
+                    }
+        if note_type_name == "Top Note":
+            top_notes.append(note_data)
+        elif note_type_name == "Heart Note":
+            heart_notes.append(note_data)
+        elif note_type_name == "Base Note":
+            base_notes.append(note_data)
+    new_notes.append({"Top Notes": top_notes})
+    new_notes.append({"Heart Notes": heart_notes})
+    new_notes.append({"Base Notes": base_notes})
+    perfume_categories = []
+
     db.session.commit()
-    new_notes = [{"note": note.note, "id": note.id} for note in new_perfume.notes]
+    
 
     return jsonify({
             "id": new_perfume.id,
@@ -92,7 +154,7 @@ def create_perfumes():
             "description": new_perfume.description,
             "brand": new_perfume.brand.name,
             "notes" : new_notes,
-            # "categories": new_perfume.categories,
+            "categories": perfume_categories,
             # "comments": new_perfume.comments
             }), 201
 

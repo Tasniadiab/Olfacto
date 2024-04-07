@@ -29,7 +29,7 @@ def create_app(environment='development'):
 
     print("SQLALCHEMY_DATABASE_URI:", app.config['SQLALCHEMY_DATABASE_URI'])
     from app.models.accounts import User, user_perfume_association, user_brand_association, user_category_association, user_note_association
-    from app.models.perfume import Notes,Perfume, perfume_category
+    from app.models.perfume import Notes,Perfume, NoteType, perfume_category
     from app.models.category import Category
     from app.models.brand import Brand
     db.init_app(app)
