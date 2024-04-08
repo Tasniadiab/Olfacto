@@ -104,7 +104,7 @@ def get_perfume(id):
         "notes": perfume_data["notes"]
     })
 
-@perfume.route("/create_perfume", methods = ["POST"])
+@perfume.route("/perfumes/create", methods = ["POST"])
 def create_perfumes():
     name = request.json["name"]
     description = request.json["description"]
@@ -192,9 +192,50 @@ def create_perfumes():
             # "comments": new_perfume.comments
             }), 201
 
-@perfume.route("/create_note", methods = ["POST"])
+@perfume.route("/perfumes/update/<int:id>", methods = ["PUT"])
+def update_perfume(id):
+    update = request.get_json()
+
+    existing_perfume = Perfume.query.get(id)
+    notes = []
+    new_notes = []
+    catgories = []
+
+    for key, value in update.items():
+        if key == "name" or key == "description":
+            setattr(existing_perfume, key, value)
+        elif key == "brand":
+            brand = Brand.query.filter_by(name=value).first()
+            if brand:
+                existing_perfume.brand = brand
+        elif key == "notes":
+            notes.append(value)
+    print(notes)
+    for note in notes: 
+        pass
+
+    db.session.commit()
+    return jsonify({
+        "id": existing_perfume.id,
+        "name": existing_perfume.name,
+        "description": existing_perfume.description,
+        "brand": {
+            "id": existing_perfume.brand.id,
+            "name": existing_perfume.brand.name
+        },
+        "notes" : [note.note for note in existing_perfume.notes],
+        "categories": [category.name for category in existing_perfume.categories],
+        # "comments": new_perfume.comments           
+        }), 201
+
+@perfume.route("/notes/create", methods = ["POST"])
 def create_note():
     note = request.json["note"]
+
+    existing_note = Notes.query.filter_by(note=note).first()
+
+    if existing_note:
+        return jsonify({"error": f"{existing_note.note} already exists"})
 
     new_note = Notes(note=note)
     db.session.add(new_note)
