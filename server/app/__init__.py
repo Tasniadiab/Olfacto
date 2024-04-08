@@ -35,13 +35,16 @@ def create_app(environment='development'):
     db.init_app(app)
     migrate.init_app(app, db)
 
-  
     
 
     from app.routes.accounts import authenticate
     from app.routes.perfume import perfume
+    from app.routes.brand import brand
+    from app.routes.category import categories
     app.register_blueprint(authenticate)
     app.register_blueprint(perfume)
+    app.register_blueprint(brand)
+    app.register_blueprint(categories)
 
     
     @app.route('/')

@@ -1,6 +1,7 @@
 from app.models import db
 
 
+
 class Comment(db.Model):
     __tablename__ = 'comments'
 
@@ -26,10 +27,13 @@ perfume_category = db.Table(
     db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True)
     
 )
+
 class NoteType(db.Model):
     __tablename__ = 'note_types'
     id = db.Column(db.Integer, primary_key=True, unique=True)
     name = db.Column(db.String(50), nullable=False)
+
+    notes = db.relationship('Notes', secondary= perfume_note, backref='perfume_note_type')
 
 class Notes(db.Model):
     __tablename__ = 'notes'
@@ -37,13 +41,7 @@ class Notes(db.Model):
     note = db.Column(db.Text, unique=True, nullable=False)
     perfume = db.relationship('Perfume', secondary=perfume_note, backref='note_perfume')
 
-    note_types = db.relationship('NoteType', secondary='notes_note_type', backref=db.backref('notes', lazy='dynamic'))
-
-notes_note_type = db.Table(
-    'notes_note_type',
-    db.Column('note_id', db.Integer, db.ForeignKey('notes.id'), primary_key=True),
-    db.Column('note_type_id', db.Integer, db.ForeignKey('note_types.id'), primary_key=True)
-)
+    note_types = db.relationship('NoteType', secondary= perfume_note, backref='perfume_notes')
 
 class Perfume(db.Model):
     __tablename__ = 'perfumes'
@@ -56,7 +54,8 @@ class Perfume(db.Model):
     brand = db.relationship('Brand', backref='perfume_brand')
 
     categories = db.relationship('Category', secondary=perfume_category, backref='perfume_category')
-    comments = db.relationship('Comment', backref='perfume_comment', lazy='dynamic')
+    comments = db.relationship('Comment', backref='perfume_comment', cascade='all, delete-orphan')
 
     notes = db.relationship('Notes', secondary=perfume_note, backref='perfume_note')
+
 
